@@ -1,4 +1,3 @@
-DataSets/
 .venv/
 *.pyc
 __pycache__/
