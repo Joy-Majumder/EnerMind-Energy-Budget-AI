@@ -1,0 +1,6 @@
+DataSets/
+.venv/
+*.pyc
+__pycache__/
+*.log
+.env
