@@ -1,0 +1,107 @@
+{
+  "timestamp": "2026-09-06T14:35:33.018876",
+  "dataset": "UCI-235",
+  "baseline_metrics": {
+    "mae": 0.11084850357626762,
+    "rmse": 0.13120966347200094,
+    "hit_rate": 100.0
+  },
+  "missing_data_test": [
+    {
+      "gap_rate_pct": 5.0,
+      "gaps_injected": 18,
+      "mae": 0.1082061780344096,
+      "rmse": 0.13018095933492244,
+      "hit_rate": 100.0
+    },
+    {
+      "gap_rate_pct": 10.0,
+      "gaps_injected": 36,
+      "mae": 0.11177601608075458,
+      "rmse": 0.13344546389996512,
+      "hit_rate": 100.0
+    },
+    {
+      "gap_rate_pct": 20.0,
+      "gaps_injected": 73,
+      "mae": 0.10947621403875668,
+      "rmse": 0.13157203341150733,
+      "hit_rate": 100.0
+    },
+    {
+      "gap_rate_pct": 30.0,
+      "gaps_injected": 109,
+      "mae": 0.11878890432501145,
+      "rmse": 0.14917407758563178,
+      "hit_rate": 100.0
+    }
+  ],
+  "seasonal_split_test": [
+    {
+      "config": "Train months 1-6, Test months 7-12",
+      "train_days": 181,
+      "test_days": 184,
+      "mae": 0.10764945450900266,
+      "rmse": 0.13131550139137266,
+      "hit_rate": 100.0
+    },
+    {
+      "config": "Train months 7-12, Test months 1-6",
+      "train_days": 184,
+      "test_days": 181,
+      "mae": 0.10983563702023914,
+      "rmse": 0.13530135297582332,
+      "hit_rate": 100.0
+    },
+    {
+      "config": "Train Q{1,2,3,4}\\Q1, Test Q1",
+      "train_days": 275,
+      "test_days": 90,
+      "mae": 0.09936400366821303,
+      "rmse": 0.12485533437257984,
+      "hit_rate": 100.0
+    },
+    {
+      "config": "Train Q{1,2,3,4}\\Q2, Test Q2",
+      "train_days": 274,
+      "test_days": 91,
+      "mae": 0.1322322834045503,
+      "rmse": 0.15880821939951476,
+      "hit_rate": 100.0
+    },
+    {
+      "config": "Train Q{1,2,3,4}\\Q3, Test Q3",
+      "train_days": 273,
+      "test_days": 92,
+      "mae": 0.10308221825609844,
+      "rmse": 0.1272444903705904,
+      "hit_rate": 100.0
+    },
+    {
+      "config": "Train Q{1,2,3,4}\\Q4, Test Q4",
+      "train_days": 273,
+      "test_days": 92,
+      "mae": 0.10808997255879536,
+      "rmse": 0.12870131693178719,
+      "hit_rate": 100.0
+    }
+  ],
+  "occupancy_change_test": [
+    {
+      "config": "+30% occupancy increase",
+      "scale_factor": 1.3,
+      "shift_at_day": 182,
+      "mae": 0.14545746749422514,
+      "rmse": 0.18148209835216766,
+      "hit_rate": 100.0
+    },
+    {
+      "config": "-30% occupancy decrease",
+      "scale_factor": 0.7,
+      "shift_at_day": 182,
+      "mae": 0.08396804308366856,
+      "rmse": 0.09898292369166745,
+      "hit_rate": 100.0
+    }
+  ]
+}

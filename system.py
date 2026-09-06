@@ -106,8 +106,13 @@ class EnerMindSystem:
         # Prepare sequences for LSTM
         data_values = df_features[['consumption_clean'] + feature_cols].values
         
-        # LSTM sequences
-        lstm_seq_length = config.LSTM_SEQUENCE_LENGTH * config.READINGS_PER_DAY  # 30 days of data
+        # Determine sequence length based on frequency
+        is_daily = len(data_values) < 1000
+        if is_daily:
+            lstm_seq_length = min(config.LSTM_SEQUENCE_LENGTH, max(7, len(data_values) // 6))
+        else:
+            lstm_seq_length = config.LSTM_SEQUENCE_LENGTH * config.READINGS_PER_DAY
+        
         X_lstm = []
         y_lstm = []
         
@@ -119,21 +124,22 @@ class EnerMindSystem:
         y_lstm = np.array(y_lstm)
         
         # Train-test split
-        split_idx = int(len(X_lstm) * (1 - test_split))
+        split_idx = int(len(X_lstm) * (1 - test_split)) if len(X_lstm) > 0 else 0
         
-        X_train_lstm = X_lstm[:split_idx]
-        X_test_lstm = X_lstm[split_idx:]
-        y_train_lstm = y_lstm[:split_idx]
-        y_test_lstm = y_lstm[split_idx:]
+        X_train_lstm = X_lstm[:split_idx] if len(X_lstm) > 0 else np.empty((0, lstm_seq_length, data_values.shape[1]))
+        X_test_lstm = X_lstm[split_idx:] if len(X_lstm) > 0 else np.empty((0, lstm_seq_length, data_values.shape[1]))
+        y_train_lstm = y_lstm[:split_idx] if len(y_lstm) > 0 else np.empty((0,))
+        y_test_lstm = y_lstm[split_idx:] if len(y_lstm) > 0 else np.empty((0,))
         
         # For Random Forest, use feature vectors
         X_rf = df_features[feature_cols].values
         y_rf = df_features['consumption_clean'].values
         
-        X_train_rf = X_rf[:split_idx]
-        X_test_rf = X_rf[split_idx:]
-        y_train_rf = y_rf[:split_idx]
-        y_test_rf = y_rf[split_idx:]
+        split_rf = int(len(df_features) * (1 - test_split))
+        X_train_rf = X_rf[:split_rf]
+        X_test_rf = X_rf[split_rf:]
+        y_train_rf = y_rf[:split_rf]
+        y_test_rf = y_rf[split_rf:]
         
         return {
             'X_train_lstm': X_train_lstm,
@@ -165,7 +171,7 @@ class EnerMindSystem:
         forecaster = HybridForecaster()
         
         # Check if sufficient data for LSTM
-        if len(training_data['X_train_lstm']) > 100:
+        if len(training_data['X_train_lstm']) >= 30:
             self.logger.info(f"Training LSTM for {member_name}...")
             history = forecaster.train_lstm(
                 training_data['X_train_lstm'],
@@ -175,24 +181,27 @@ class EnerMindSystem:
             )
             
             # Evaluate LSTM on test set
-            lstm_pred = forecaster.lstm.predict(training_data['X_test_lstm'])
-            lstm_metrics = evaluate_model(training_data['y_test_lstm'], lstm_pred)
-            self.logger.info(f"LSTM Metrics - MAE: {lstm_metrics['mae']:.4f}, "
-                           f"Accuracy: {lstm_metrics['accuracy']:.1f}%")
+            if len(training_data['X_test_lstm']) > 0:
+                lstm_pred = forecaster.lstm.predict(training_data['X_test_lstm'])
+                lstm_metrics = evaluate_model(training_data['y_test_lstm'], lstm_pred)
+                self.logger.info(f"LSTM Metrics - MAE: {lstm_metrics['mae']:.4f}, "
+                                f"Accuracy: {lstm_metrics['accuracy']:.1f}%")
         else:
-            self.logger.warning(f"Insufficient data for LSTM training on {member_name}")
+            self.logger.info(f"Using Random Forest for {member_name} (insufficient sequence history for LSTM)")
         
         # Train Random Forest (always)
-        self.logger.info(f"Training Random Forest for {member_name}...")
-        forecaster.train_rf(
-            training_data['X_train_rf'],
-            training_data['y_train_rf']
-        )
-        
-        # Evaluate Random Forest
-        rf_pred = forecaster.rf.predict(training_data['X_test_rf'])
-        rf_metrics = evaluate_model(training_data['y_test_rf'], rf_pred)
-        self.logger.info(f"RF Metrics - MAE: {rf_metrics['mae']:.4f}, "
+        if len(training_data['X_train_rf']) > 0:
+            self.logger.info(f"Training Random Forest for {member_name}...")
+            forecaster.train_rf(
+                training_data['X_train_rf'],
+                training_data['y_train_rf']
+            )
+            
+            # Evaluate Random Forest
+            if len(training_data['X_test_rf']) > 0:
+                rf_pred = forecaster.rf.predict(training_data['X_test_rf'])
+                rf_metrics = evaluate_model(training_data['y_test_rf'], rf_pred)
+                self.logger.info(f"RF Metrics - MAE: {rf_metrics['mae']:.4f}, "
                         f"Accuracy: {rf_metrics['accuracy']:.1f}%")
         
         # Store forecaster
@@ -246,13 +255,9 @@ class EnerMindSystem:
         actual_consumption = self.consumption_tracker.get_member_consumption(member_name)
         
         # Prepare LSTM input (sequence of recent data)
-        recent_data = df['consumption_clean'].tail(
-            config.LSTM_SEQUENCE_LENGTH * config.READINGS_PER_DAY
-        )
-        
-        if len(recent_data) < config.LSTM_SEQUENCE_LENGTH * config.READINGS_PER_DAY:
-            self.logger.warning(f"Insufficient recent data for {member_name}")
-            return None
+        is_daily = len(df) < 1000
+        seq_len = min(config.LSTM_SEQUENCE_LENGTH, len(df)) if is_daily else config.LSTM_SEQUENCE_LENGTH * config.READINGS_PER_DAY
+        recent_data = df['consumption_clean'].tail(seq_len).values
         
         # Prepare RF input (latest feature vector)
         df_features = self.feature_engineer.engineer_features(

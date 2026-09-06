@@ -3,20 +3,50 @@ Utility functions for EnerMind system.
 """
 
 import json
-from datetime import datetime
+from datetime import datetime, date
 import pandas as pd
+import numpy as np
+
+
+def sanitize_for_json(obj):
+    """Recursively convert datetime/date/pandas/numpy objects into JSON-serializable types."""
+    if isinstance(obj, dict):
+        return {str(k.isoformat() if isinstance(k, (datetime, date, pd.Timestamp)) else k): sanitize_for_json(v) for k, v in obj.items()}
+    elif isinstance(obj, list):
+        return [sanitize_for_json(item) for item in obj]
+    elif isinstance(obj, (datetime, date, pd.Timestamp)):
+        return obj.isoformat()
+    elif isinstance(obj, pd.Series):
+        return sanitize_for_json(obj.to_dict())
+    elif isinstance(obj, pd.DataFrame):
+        return sanitize_for_json(obj.to_dict(orient='records'))
+    elif isinstance(obj, (np.floating, float)):
+        return float(obj)
+    elif isinstance(obj, (np.integer, int)):
+        return int(obj)
+    elif isinstance(obj, (np.bool_, bool)):
+        return bool(obj)
+    elif isinstance(obj, np.ndarray):
+        return sanitize_for_json(obj.tolist())
+    return obj
 
 
 class JSONEncoder(json.JSONEncoder):
-    """Custom JSON encoder for datetime objects."""
+    """Custom JSON encoder for datetime and numpy objects."""
     
     def default(self, obj):
-        if isinstance(obj, datetime):
+        if isinstance(obj, (datetime, date, pd.Timestamp)):
             return obj.isoformat()
         elif isinstance(obj, pd.Series):
-            return obj.to_dict()
+            return sanitize_for_json(obj.to_dict())
         elif isinstance(obj, pd.DataFrame):
-            return obj.to_dict(orient='records')
+            return sanitize_for_json(obj.to_dict(orient='records'))
+        elif isinstance(obj, np.ndarray):
+            return obj.tolist()
+        elif isinstance(obj, np.floating):
+            return float(obj)
+        elif isinstance(obj, np.integer):
+            return int(obj)
         return super().default(obj)
 
 
@@ -59,8 +89,9 @@ def format_forecast(forecast):
 
 def export_report_to_json(report, filename):
     """Export report to JSON file."""
+    clean_report = sanitize_for_json(report)
     with open(filename, 'w') as f:
-        json.dump(report, f, cls=JSONEncoder, indent=2)
+        json.dump(clean_report, f, indent=2)
 
 
 def print_report(report):

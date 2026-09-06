@@ -1,0 +1,141 @@
+{
+  "timestamp": "2026-09-06T14:31:38.976734",
+  "members": {
+    "Alice": {
+      "budget": 97.47588044783798,
+      "consumption": 283.2061737827338,
+      "projected_total": 286.3771180415916,
+      "utilization": "293.8%",
+      "alerts": [],
+      "recommendations": [
+        {
+          "member": "Alice",
+          "priority": "CRITICAL",
+          "category": "schedule_shifting",
+          "suggestion": "URGENT: Schedule high-consumption tasks (water_heater, dishwasher, washing_machine, dryer) during off-peak hours (9pm-6am) to reduce costs.",
+          "estimated_savings": 1.2,
+          "timestamp": "2026-09-06T14:31:39.011996"
+        },
+        {
+          "member": "Alice",
+          "priority": "CRITICAL",
+          "category": "temperature_control",
+          "suggestion": "Consider reducing AC usage by 1-2 degrees or using a programmable thermostat.",
+          "estimated_savings": 1.5,
+          "timestamp": "2026-09-06T14:31:39.011996"
+        }
+      ],
+      "recent_daily": {
+        "2023-11-20": 3.308996454888861,
+        "2023-11-21": 3.1817078671216046,
+        "2023-11-22": 3.0929607773521455,
+        "2023-11-23": 3.092506439701818,
+        "2023-11-24": 3.1077484629482224,
+        "2023-11-25": 3.008673392735954,
+        "2023-11-26": 3.2214324267404884
+      }
+    },
+    "Bob": {
+      "budget": 66.05608385495852,
+      "consumption": 191.93311151168987,
+      "projected_total": 194.04632285056792,
+      "utilization": "293.8%",
+      "alerts": [],
+      "recommendations": [
+        {
+          "member": "Bob",
+          "priority": "CRITICAL",
+          "category": "schedule_shifting",
+          "suggestion": "URGENT: Schedule high-consumption tasks (water_heater, dishwasher, washing_machine, dryer) during off-peak hours (9pm-6am) to reduce costs.",
+          "estimated_savings": 1.2,
+          "timestamp": "2026-09-06T14:31:39.048646"
+        },
+        {
+          "member": "Bob",
+          "priority": "CRITICAL",
+          "category": "temperature_control",
+          "suggestion": "Consider reducing AC usage by 1-2 degrees or using a programmable thermostat.",
+          "estimated_savings": 1.5,
+          "timestamp": "2026-09-06T14:31:39.048647"
+        }
+      ],
+      "recent_daily": {
+        "2023-11-20": 2.1865531651917354,
+        "2023-11-21": 2.0923276020596955,
+        "2023-11-22": 2.189737594888317,
+        "2023-11-23": 2.246981399122485,
+        "2023-11-24": 2.1924804394828303,
+        "2023-11-25": 1.9461087106631647,
+        "2023-11-26": 2.072748513224979
+      }
+    },
+    "Diana": {
+      "budget": 94.74701399748811,
+      "consumption": 276.75510828853544,
+      "projected_total": 280.0351313296073,
+      "utilization": "295.6%",
+      "alerts": [],
+      "recommendations": [
+        {
+          "member": "Diana",
+          "priority": "CRITICAL",
+          "category": "schedule_shifting",
+          "suggestion": "URGENT: Schedule high-consumption tasks (water_heater, dishwasher, washing_machine, dryer) during off-peak hours (9pm-6am) to reduce costs.",
+          "estimated_savings": 1.2,
+          "timestamp": "2026-09-06T14:31:39.084561"
+        },
+        {
+          "member": "Diana",
+          "priority": "CRITICAL",
+          "category": "temperature_control",
+          "suggestion": "Consider reducing AC usage by 1-2 degrees or using a programmable thermostat.",
+          "estimated_savings": 1.5,
+          "timestamp": "2026-09-06T14:31:39.084562"
+        }
+      ],
+      "recent_daily": {
+        "2023-11-20": 2.630799263631811,
+        "2023-11-21": 2.5498823334974694,
+        "2023-11-22": 2.8546091838073577,
+        "2023-11-23": 2.83094701476006,
+        "2023-11-24": 3.1014724569144856,
+        "2023-11-25": 2.715533759143727,
+        "2023-11-26": 3.082528587731563
+      }
+    },
+    "Charlie": {
+      "budget": 41.8357740874254,
+      "consumption": 121.31728842720065,
+      "projected_total": 122.64075258928527,
+      "utilization": "293.1%",
+      "alerts": [],
+      "recommendations": [
+        {
+          "member": "Charlie",
+          "priority": "CRITICAL",
+          "category": "schedule_shifting",
+          "suggestion": "URGENT: Schedule high-consumption tasks (water_heater, dishwasher, washing_machine, dryer) during off-peak hours (9pm-6am) to reduce costs.",
+          "estimated_savings": 1.2,
+          "timestamp": "2026-09-06T14:31:39.120150"
+        },
+        {
+          "member": "Charlie",
+          "priority": "CRITICAL",
+          "category": "temperature_control",
+          "suggestion": "Consider reducing AC usage by 1-2 degrees or using a programmable thermostat.",
+          "estimated_savings": 1.5,
+          "timestamp": "2026-09-06T14:31:39.120150"
+        }
+      ],
+      "recent_daily": {
+        "2023-11-20": 1.202643872849247,
+        "2023-11-21": 1.3930145007895227,
+        "2023-11-22": 1.3813951280275152,
+        "2023-11-23": 1.3598143383837455,
+        "2023-11-24": 1.276416486561347,
+        "2023-11-25": 1.21530571968482,
+        "2023-11-26": 1.4441342681875138
+      }
+    }
+  }
+}

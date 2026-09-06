@@ -1,0 +1,91 @@
+{
+  "timestamp": "2026-09-06T14:35:25.164288",
+  "dataset": "UCI-235",
+  "data_statistics": {
+    "mean_daily_kwh": 5.355,
+    "std_daily_kwh": 0.127,
+    "n_days": 365
+  },
+  "k_values_tested": [
+    0.0,
+    0.25,
+    0.5,
+    0.75,
+    1.0,
+    1.5,
+    2.0
+  ],
+  "default_k": 0.5,
+  "sensitivity_results": [
+    {
+      "k": 0.0,
+      "daily_budget_kwh": 5.355,
+      "monthly_budget_kwh": 160.7,
+      "p_exceed_theoretical": 50.0,
+      "p_exceed_empirical": 49.3,
+      "n_exceed_days": 180,
+      "total_days": 365,
+      "expected_alerts_per_month": 14.8
+    },
+    {
+      "k": 0.25,
+      "daily_budget_kwh": 5.387,
+      "monthly_budget_kwh": 161.6,
+      "p_exceed_theoretical": 40.1,
+      "p_exceed_empirical": 41.1,
+      "n_exceed_days": 150,
+      "total_days": 365,
+      "expected_alerts_per_month": 12.3
+    },
+    {
+      "k": 0.5,
+      "daily_budget_kwh": 5.418,
+      "monthly_budget_kwh": 162.6,
+      "p_exceed_theoretical": 30.9,
+      "p_exceed_empirical": 31.8,
+      "n_exceed_days": 116,
+      "total_days": 365,
+      "expected_alerts_per_month": 9.5
+    },
+    {
+      "k": 0.75,
+      "daily_budget_kwh": 5.45,
+      "monthly_budget_kwh": 163.5,
+      "p_exceed_theoretical": 22.7,
+      "p_exceed_empirical": 23.3,
+      "n_exceed_days": 85,
+      "total_days": 365,
+      "expected_alerts_per_month": 7.0
+    },
+    {
+      "k": 1.0,
+      "daily_budget_kwh": 5.482,
+      "monthly_budget_kwh": 164.5,
+      "p_exceed_theoretical": 15.9,
+      "p_exceed_empirical": 18.1,
+      "n_exceed_days": 66,
+      "total_days": 365,
+      "expected_alerts_per_month": 5.4
+    },
+    {
+      "k": 1.5,
+      "daily_budget_kwh": 5.545,
+      "monthly_budget_kwh": 166.4,
+      "p_exceed_theoretical": 6.7,
+      "p_exceed_empirical": 7.1,
+      "n_exceed_days": 26,
+      "total_days": 365,
+      "expected_alerts_per_month": 2.1
+    },
+    {
+      "k": 2.0,
+      "daily_budget_kwh": 5.608,
+      "monthly_budget_kwh": 168.2,
+      "p_exceed_theoretical": 2.3,
+      "p_exceed_empirical": 1.4,
+      "n_exceed_days": 5,
+      "total_days": 365,
+      "expected_alerts_per_month": 0.4
+    }
+  ]
+}

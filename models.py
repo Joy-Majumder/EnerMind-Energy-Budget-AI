@@ -86,7 +86,11 @@ class LSTMForecaster:
             verbose: verbosity level
         """
         if self.model is None:
+            self.input_dim = X_train.shape[2]
+            self.sequence_length = X_train.shape[1]
             self.build_model((X_train.shape[1], X_train.shape[2]))
+        
+        self.scaler.fit(y_train.reshape(-1, 1))
         
         epochs = epochs or config.LSTM_EPOCHS
         
@@ -128,7 +132,7 @@ class LSTMForecaster:
         Forecast end-of-month consumption for a member.
         
         Args:
-            member_data: DataFrame with member's consumption data
+            member_data: DataFrame or array with member's consumption data
             actual_consumption_so_far: cumulative consumption to date (kWh)
             
         Returns:
@@ -138,20 +142,35 @@ class LSTMForecaster:
             return None
         
         # Use most recent sequence for prediction
-        recent_data = member_data['consumption'].tail(self.sequence_length).values
+        if isinstance(member_data, pd.DataFrame):
+            col = 'consumption_clean' if 'consumption_clean' in member_data.columns else 'consumption'
+            recent_data = member_data[col].tail(self.sequence_length).values
+        elif isinstance(member_data, pd.Series):
+            recent_data = member_data.tail(self.sequence_length).values
+        elif isinstance(member_data, np.ndarray):
+            recent_data = member_data[-self.sequence_length:]
+        else:
+            recent_data = np.array(member_data)[-self.sequence_length:]
         
         if len(recent_data) < self.sequence_length:
             return None
         
         # Normalize and prepare for LSTM
         recent_data_scaled = self.scaler.transform(recent_data.reshape(-1, 1)).flatten()
-        X = recent_data_scaled.reshape(1, -1, 1)
+        
+        expected_dim = getattr(self, 'input_dim', 1)
+        if expected_dim == 1:
+            X = recent_data_scaled.reshape(1, -1, 1)
+        else:
+            # Replicate 1D sequence across expected feature dimension if needed
+            X = np.repeat(recent_data_scaled.reshape(1, -1, 1), expected_dim, axis=2)
         
         # Predict remaining consumption
-        remaining_prediction = self.predict(X)[0]
-        remaining_prediction = self.scaler.inverse_transform(
-            np.array([[remaining_prediction]])
-        )[0, 0]
+        pred_scaled = self.predict(X)[0]
+        try:
+            remaining_prediction = self.scaler.inverse_transform(np.array([[pred_scaled]]))[0, 0]
+        except Exception:
+            remaining_prediction = float(pred_scaled)
         
         # Ensure non-negative
         remaining_prediction = max(remaining_prediction, 0)

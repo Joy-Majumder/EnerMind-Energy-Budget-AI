@@ -145,9 +145,10 @@ class FeatureEngineer:
             DataFrame with lag features
         """
         df = df.copy()
+        period_mult = config.READINGS_PER_DAY if len(df) >= 1000 else 1
         
         for lag in self.feature_lags:
-            lag_periods = lag * config.READINGS_PER_DAY  # Convert days to periods
+            lag_periods = lag * period_mult  # Convert days to periods
             df[f'consumption_lag_{lag}d'] = df[consumption_col].shift(lag_periods)
         
         return df
@@ -164,9 +165,10 @@ class FeatureEngineer:
             DataFrame with rolling features
         """
         df = df.copy()
+        period_mult = config.READINGS_PER_DAY if len(df) >= 1000 else 1
         
         for window in self.rolling_windows:
-            window_periods = window * config.READINGS_PER_DAY
+            window_periods = window * period_mult
             df[f'rolling_mean_{window}d'] = df[consumption_col].rolling(window=window_periods).mean()
             df[f'rolling_std_{window}d'] = df[consumption_col].rolling(window=window_periods).std()
         
@@ -188,17 +190,20 @@ class FeatureEngineer:
         if not isinstance(df.index, pd.DatetimeIndex):
             df.index = pd.to_datetime(df.index)
         
-        # Hourly aggregate
-        hourly = df[consumption_col].resample('h').sum()
-        df['hourly_total'] = df.index.map(
-            hourly.groupby(hourly.index.hour).transform('mean')
-        ).values
-        
-        # Daily aggregate
-        daily = df[consumption_col].resample('d').sum()
-        df['daily_total'] = df[consumption_col].resample('d').sum().reindex(
-            df.index, method='ffill'
-        ).values
+        if len(df) < 1000:
+            df['hourly_total'] = df[consumption_col]
+            df['daily_total'] = df[consumption_col]
+        else:
+            # Hourly aggregate
+            hourly = df[consumption_col].resample('h').sum()
+            df['hourly_total'] = df.index.map(
+                hourly.groupby(hourly.index.hour).transform('mean')
+            ).values
+            
+            # Daily aggregate
+            df['daily_total'] = df[consumption_col].resample('d').sum().reindex(
+                df.index, method='ffill'
+            ).values
         
         return df
     
