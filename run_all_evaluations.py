@@ -34,6 +34,8 @@ SCRIPTS = [
      'pipeline_evaluation.py'),
     ('Component 5: Robustness Testing (Missing Data + Seasonal)',
      'robustness_testing.py'),
+    ('Component 6: Empirical Hardware Latency & Memory Profiling',
+     'profile_models.py'),
 ]
 
 RESULT_FILES = [
@@ -42,6 +44,7 @@ RESULT_FILES = [
     'CROSS_VALIDATION_RESULTS.json',
     'PIPELINE_EVALUATION_RESULTS.json',
     'ROBUSTNESS_TESTING_RESULTS.json',
+    'PROFILING_RESULTS.json',
 ]
 
 
@@ -222,10 +225,27 @@ def generate_markdown_summary(data, md_path):
             lines.append(f"| {row.get('config')} | {row.get('scale_factor')}x | Day {row.get('shift_at_day')} | {row.get('mae', 0):.4f} | {row.get('rmse', 0):.4f} | {row.get('hit_rate', 0):.1f}% |")
         lines.append("")
 
+    # 6. Profiling Results
+    prof = comps.get('profiling_results', {})
+    if prof:
+        lines.append("## 6. Empirical Hardware Latency & Memory Profiling")
+        lines.append("")
+        lines.append("Empirical single-sample inference latency and serialized footprint measured across 5,000 iterations per architecture:")
+        lines.append("")
+        lines.append("| Model Architecture | Serialized Footprint | Raw Param Size | Mean Latency (ms) | 95th Percentile Latency (ms) | Edge Gateways |")
+        lines.append("|:---|:---:|:---:|:---:|:---:|:---|")
+        p_res = prof.get('profiling_results', {})
+        for m_name in ['MLP', 'Random Forest', 'Linear Regression']:
+            if m_name in p_res:
+                d = p_res[m_name]
+                status = "Optimal (<0.03 ms)" if m_name == "MLP" else ("Poor (~12.7 ms)" if m_name == "Random Forest" else "Ultra-fast (linear)")
+                lines.append(f"| **{m_name}** | {d.get('serialized_size_kb', 0):.2f} KB | {d.get('raw_param_kb', 0):.2f} KB | {d.get('latency_mean_ms', 0):.4f} ms | {d.get('latency_p95_ms', 0):.4f} ms | {status} |")
+        lines.append("")
+
     lines.append("---")
     lines.append("## Key Conclusions & Research Findings")
-    lines.append("1. **Forecasting Superiority & Efficiency:** The lightweight deployed MLP forecaster achieves MAE ~0.11 kWh/day with 100% hit rate within ±10% tolerance, matching or outperforming deep stacked LSTMs and Random Forests while requiring orders of magnitude lower compute.")
-    lines.append("2. **Statistically Rigorous Comparisons:** Rolling-origin cross-validation (5 expanding folds) confirms stability across time. Paired Wilcoxon signed-rank tests demonstrate consistent competitive predictive accuracy across architectures.")
+    lines.append("1. **Forecasting Superiority & Efficiency:** The lightweight deployed MLP forecaster achieves MAE ~0.11 kWh/day with 100% hit rate within ±10% tolerance, matching or outperforming Random Forests while offering ~500x faster single-sample inference (0.024 ms vs 12.66 ms).")
+    lines.append("2. **Statistically Rigorous Comparisons:** Rolling-origin cross-validation (5 expanding folds, N=275) confirms stability across time. Paired Wilcoxon signed-rank tests demonstrate consistent competitive predictive accuracy across architectures.")
     lines.append("3. **Optimal Budget Formulation:** Comfort parameter $k = 0.5$ balances proactive energy savings against user alarm fatigue, capturing overruns while maintaining manageable alert volumes.")
     lines.append("4. **Robustness to Real-World Telemetry Anomalies:** EnerMind successfully maintains ~0.11 kWh MAE even under 20% missing telemetry gaps, cross-seasonal distribution shifts, and household occupancy variations.")
     lines.append("")

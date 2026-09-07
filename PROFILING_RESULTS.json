@@ -1,0 +1,46 @@
+{
+  "timestamp": "2026-09-07T14:13:11.925249",
+  "dataset": "UCI-235",
+  "benchmark_runs_per_model": 5000,
+  "profiling_results": {
+    "MLP": {
+      "serialized_size_bytes": 228838,
+      "serialized_size_kb": 223.47,
+      "raw_param_bytes": 73736,
+      "raw_param_kb": 72.01,
+      "benchmark_iterations": 5000,
+      "latency_mean_ms": 0.0248,
+      "latency_median_ms": 0.0257,
+      "latency_p95_ms": 0.027,
+      "latency_min_ms": 0.0189,
+      "latency_max_ms": 0.0702,
+      "latency_std_ms": 0.0027
+    },
+    "Random Forest": {
+      "serialized_size_bytes": 639428,
+      "serialized_size_kb": 624.44,
+      "raw_param_bytes": 0,
+      "raw_param_kb": 0.0,
+      "benchmark_iterations": 5000,
+      "latency_mean_ms": 12.6523,
+      "latency_median_ms": 13.4206,
+      "latency_p95_ms": 13.5295,
+      "latency_min_ms": 10.8597,
+      "latency_max_ms": 24.4993,
+      "latency_std_ms": 0.99
+    },
+    "Linear Regression": {
+      "serialized_size_bytes": 512,
+      "serialized_size_kb": 0.5,
+      "raw_param_bytes": 56,
+      "raw_param_kb": 0.05,
+      "benchmark_iterations": 5000,
+      "latency_mean_ms": 0.0145,
+      "latency_median_ms": 0.0139,
+      "latency_p95_ms": 0.018,
+      "latency_min_ms": 0.0123,
+      "latency_max_ms": 0.0283,
+      "latency_std_ms": 0.0017
+    }
+  }
+}

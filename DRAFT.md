@@ -224,9 +224,9 @@ We expanded the comparative benchmark across four distinct model families on rea
 #### 1. Single Train/Test Split (67% Train / 33% Test, $N=365$ Days):
 | Model Architecture | Parameter Count / Complexity | MAE (kWh/day) | RMSE (kWh/day) | Hit Rate (±10%) | Edge Feasibility |
 |:---|:---:|:---:|:---:|:---:|:---:|
-| **MLP (Deployed)** | **Lightweight (2 dense layers, 128/64)** | **0.1105** | **0.1321** | **100.0%** | **Optimal (<0.2 ms inference)** |
-| **Random Forest** | 100 Trees (max depth 10) | 0.1146 | 0.1362 | 100.0% | Moderate (large memory footprint) |
-| **Linear Regression**| 12 Coefficients (Ridge $\alpha=1.0$) | 0.1193 | 0.1418 | 100.0% | Low (underfits non-linear peaks) |
+| **MLP (Deployed)** | **Lightweight (2 dense layers, 128/64)** | **0.1105** | **0.1321** | **100.0%** | **Optimal (0.025 ms latency, 72 KB params)** |
+| **Random Forest** | 100 Trees (max depth 10) | 0.1146 | 0.1362 | 100.0% | Moderate (12.65 ms latency, 624 KB) |
+| **Linear Regression**| 12 Coefficients (Ridge $\alpha=1.0$) | 0.1193 | 0.1418 | 100.0% | Ultra-fast (0.015 ms latency, 0.5 KB) |
 
 *(Note: Stacked LSTM was excluded from edge retraining benchmarks due to high compute/memory latency on embedded microcontrollers.)*
 
@@ -246,9 +246,9 @@ To evaluate whether any architectural family exhibits statistically superior pre
 | **Random Forest vs. Linear Regression** | $-0.0006$ | $18342.0$ | $p = 0.6316$ | Not Significant ($p \ge 0.05$) | $0.0334$ (Negligible) |
 
 #### Architectural Justification for Edge MLP:
-The non-parametric paired tests across all $N=275$ walk-forward days confirm that there is **no statistically significant predictive accuracy gap** between the lightweight MLP, Random Forest, and Linear Regression ($p > 0.19$ for all pairs, effect sizes $r < 0.10$). However, from an embedded systems and edge gateway perspective:
-- **Memory Footprint:** MLP requires $<50\text{ KB}$ weights vs. $>2.4\text{ MB}$ for 100-tree Random Forest.
-- **Inference Latency:** MLP executes in $<0.2\text{ ms}$ on low-power ARM Cortex-M microcontrollers vs. $>15\text{ ms}$ for stacked LSTM or multi-tree traversal.
+The non-parametric paired tests across all $N=275$ walk-forward days confirm that there is **no statistically significant predictive accuracy gap** between the lightweight MLP, Random Forest, and Linear Regression ($p > 0.19$ for all pairs, effect sizes $r < 0.10$). However, from an empirical embedded systems profiling benchmark (`profile_models.py` over 5,000 runs):
+- **Memory Footprint:** MLP raw parameter arrays require $72.01\text{ KB}$ ($223.47\text{ KB}$ serialized) vs. $624.44\text{ KB}$ for 100-tree Random Forest.
+- **Inference Latency:** MLP single-sample inference executes in **$0.0248\text{ ms}$ ($24.8\ \mu\text{s}$)** vs. **$12.6523\text{ ms}$** for Random Forest (a **$510\times$ execution speedup**).
 - **Continuous Adaptation:** MLP supports lightweight incremental gradient fine-tuning on edge devices without re-allocating tree ensembles.
 Thus, the lightweight MLP is the optimal choice for real-time edge residential gateways.
 

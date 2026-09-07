@@ -1,5 +1,5 @@
 # EnerMind: Comprehensive Experimental Evaluation & Final Results
-**Generated:** 2026-09-07T14:00:38.693954  
+**Generated:** 2026-09-07T14:13:12.003383  
 **System Version:** 2.0 (Real Data Multi-Model Benchmark)  
 
 ---
@@ -103,9 +103,19 @@ Replaying telemetry traces through the complete pipeline (forecasting → budget
 | +30% occupancy increase | 1.3x | Day 182 | 0.1455 | 0.1815 | 100.0% |
 | -30% occupancy decrease | 0.7x | Day 182 | 0.0840 | 0.0990 | 100.0% |
 
+## 6. Empirical Hardware Latency & Memory Profiling
+
+Empirical single-sample inference latency and serialized footprint measured across 5,000 iterations per architecture:
+
+| Model Architecture | Serialized Footprint | Raw Param Size | Mean Latency (ms) | 95th Percentile Latency (ms) | Edge Gateways |
+|:---|:---:|:---:|:---:|:---:|:---|
+| **MLP** | 223.47 KB | 72.01 KB | 0.0248 ms | 0.0270 ms | Optimal (<0.03 ms) |
+| **Random Forest** | 624.44 KB | 0.00 KB | 12.6523 ms | 13.5295 ms | Poor (~12.7 ms) |
+| **Linear Regression** | 0.50 KB | 0.05 KB | 0.0145 ms | 0.0180 ms | Ultra-fast (linear) |
+
 ---
 ## Key Conclusions & Research Findings
-1. **Forecasting Superiority & Efficiency:** The lightweight deployed MLP forecaster achieves MAE ~0.11 kWh/day with 100% hit rate within ±10% tolerance, matching or outperforming deep stacked LSTMs and Random Forests while requiring orders of magnitude lower compute.
-2. **Statistically Rigorous Comparisons:** Rolling-origin cross-validation (5 expanding folds) confirms stability across time. Paired Wilcoxon signed-rank tests demonstrate consistent competitive predictive accuracy across architectures.
+1. **Forecasting Superiority & Efficiency:** The lightweight deployed MLP forecaster achieves MAE ~0.11 kWh/day with 100% hit rate within ±10% tolerance, matching or outperforming Random Forests while offering ~500x faster single-sample inference (0.024 ms vs 12.66 ms).
+2. **Statistically Rigorous Comparisons:** Rolling-origin cross-validation (5 expanding folds, N=275) confirms stability across time. Paired Wilcoxon signed-rank tests demonstrate consistent competitive predictive accuracy across architectures.
 3. **Optimal Budget Formulation:** Comfort parameter $k = 0.5$ balances proactive energy savings against user alarm fatigue, capturing overruns while maintaining manageable alert volumes.
 4. **Robustness to Real-World Telemetry Anomalies:** EnerMind successfully maintains ~0.11 kWh MAE even under 20% missing telemetry gaps, cross-seasonal distribution shifts, and household occupancy variations.
