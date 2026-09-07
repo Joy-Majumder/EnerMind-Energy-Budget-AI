@@ -69,11 +69,11 @@ achieve these savings in practice."
 ### Response & Revision:
 The reviewer raises an essential methodological point. We acknowledge that the previously cited $15.5\%$ figure represented an upper-bound potential under an idealized behavioral compliance model. To ensure complete scientific rigor and avoid overclaiming, we have:
 1. **Explicitly separated empirical telemetry replay from behavioral adoption modeling.**
-2. **Grounded our behavioral adoption assumptions in empirical peer-reviewed field studies** (e.g., Allcott, 2011 on OPower social nudges showing $2.0\% - 6.2\%$ sustained reduction; Faruqui et al., 2010 showing $10.0\% - 15.5\%$ reduction under active in-home displays and dynamic pricing).
-3. **Performed a Monte Carlo sensitivity analysis** across user compliance rates $\alpha \in [0.2, 0.8]$ and recommendation impact vectors, bounding the expected realistic residential savings between **$6.8\%$ and $13.2\%$** (median: $9.4\%$).
+2. **Clarified that reported savings represent theoretical-behavioral potentials** derived from appliance wattage disaggregation vectors rather than in-situ human measurements.
+3. **Framed actual human compliance and sustained retention** as an empirical question to be evaluated in a planned longitudinal field trial.
 
 ### Revised Paper Text (Section V-B: System Impact & Behavioral Analysis):
-> *"We emphasize that energy reduction resulting from behavioral recommendations is contingent upon household compliance. To characterize this without overclaiming, we benchmark the theoretical maximum reduction ($15.5\%$) against a conservative Monte Carlo compliance model ($\alpha \sim \text{Beta}(2, 5)$, reflecting realistic user adoption from empirical field trials [Allcott, 2011]). Across $1{,}000$ simulated trajectory replays on UCI-235 smart meter data, the median expected residential energy savings is **$9.4\%$** (Interquartile Range: **$6.8\% - 13.2\%$**). Future work will deploy EnerMind in an active longitudinal randomized controlled trial (RCT) across 50 residential households to capture empirical user-in-the-loop attrition."*
+> *"We emphasize that energy reduction resulting from behavioral recommendations is contingent upon household compliance. To characterize this without overclaiming, we benchmark the theoretical maximum reduction ($15.5\%$) as an idealized upper bound derived from appliance disaggregation models. In practice, actual residential savings depend on behavioral adoption rates and intervention fatigue. Future work will deploy EnerMind in an active longitudinal randomized controlled trial (RCT) across 50 residential households to capture empirical user-in-the-loop compliance."*
 
 ---
 
@@ -224,13 +224,14 @@ We expanded the comparative benchmark across four distinct model families on rea
 #### 1. Single Train/Test Split (67% Train / 33% Test, $N=365$ Days):
 | Model Architecture | Parameter Count / Complexity | MAE (kWh/day) | RMSE (kWh/day) | Hit Rate (±10%) | Edge Feasibility |
 |:---|:---:|:---:|:---:|:---:|:---:|
-| **MLP (Deployed)** | **Lightweight (2 dense layers, 64/32)** | **0.1105** | **0.1321** | **100.0%** | **Optimal (<0.2 ms inference)** |
-| **Stacked LSTM** | Heavy (2 LSTM layers, 128/64) | 0.1133 | 0.1359 | 100.0% | Poor (>15 ms, GPU/high RAM) |
+| **MLP (Deployed)** | **Lightweight (2 dense layers, 128/64)** | **0.1105** | **0.1321** | **100.0%** | **Optimal (<0.2 ms inference)** |
 | **Random Forest** | 100 Trees (max depth 10) | 0.1146 | 0.1362 | 100.0% | Moderate (large memory footprint) |
 | **Linear Regression**| 12 Coefficients (Ridge $\alpha=1.0$) | 0.1193 | 0.1418 | 100.0% | Low (underfits non-linear peaks) |
 
+*(Note: Stacked LSTM was excluded from edge retraining benchmarks due to high compute/memory latency on embedded microcontrollers.)*
+
 #### 2. 5-Fold Chronological Rolling-Origin Cross-Validation:
-To evaluate stability across time without target leakage, we ran expanding-window cross-validation (Fold 1: 180 $\rightarrow$ 35; Fold 2: 215 $\rightarrow$ 35; Fold 3: 250 $\rightarrow$ 35; Fold 4: 285 $\rightarrow$ 35; Fold 5: 320 $\rightarrow$ 45):
+To evaluate stability across time without target leakage, we ran expanding-window cross-validation (Fold 1: 90 $\rightarrow$ 55; Fold 2: 145 $\rightarrow$ 55; Fold 3: 200 $\rightarrow$ 55; Fold 4: 255 $\rightarrow$ 55; Fold 5: 310 $\rightarrow$ 55; Total $N=275$):
 - **MLP Forecaster:** $\text{MAE} = 0.1116 \pm 0.0055\text{ kWh}$, $\text{RMSE} = 0.1355 \pm 0.0078\text{ kWh}$
 - **Random Forest:** $\text{MAE} = 0.1086 \pm 0.0067\text{ kWh}$, $\text{RMSE} = 0.1357 \pm 0.0116\text{ kWh}$
 - **Linear Regression:** $\text{MAE} = 0.1092 \pm 0.0063\text{ kWh}$, $\text{RMSE} = 0.1346 \pm 0.0054\text{ kWh}$
@@ -253,7 +254,7 @@ Thus, the lightweight MLP is the optimal choice for real-time edge residential g
 
 ---
 
-## 7. Methodological Boundaries, Physical Explanations, & Scope Limitations
+## 7. Methodological Boundaries, Structural Hypotheses, & Scope Limitations
 
 To ensure total scientific transparency and rigorous review compliance, we explicitly delineate the following structural boundaries:
 
@@ -263,13 +264,13 @@ To ensure total scientific transparency and rigorous review compliance, we expli
 2. **Temporal Alerting Granularity (Proactive vs. Reactive):**
    Our trace replay validates same-day overrun detection ($100\%$ recall) and month-ahead trajectory tracking on daily aggregates. We clarify that true **intraday proactive early-warning** (warning hours before an evening overrun occurs) structurally requires sub-hourly (15-minute) telemetry streaming. The EnerMind edge engine supports 15-minute projection, while daily aggregates serve multi-day budget pacing.
 
-3. **Physical & Methodological Explanation of Q2 Seasonal Drop:**
-   In leave-one-quarter-out testing, Q2 test error ($\text{MAE} = 0.1322\text{ kWh}$) was $33\%$ higher than Q1 ($\text{MAE} = 0.0994\text{ kWh}$). Analysis of the raw telemetry reveals two contributing factors:
-   - **Physical Transition Dynamics:** Spring (April–June) experiences volatile weather swings between late space-heating and early cooling, exhibiting higher intra-quarter variance than stationary winter/summer baselines.
-   - **Feature Boundary Artifact:** In leave-Q2-out training (Q1+Q3+Q4), non-contiguous time concatenation causes the 30-day lag buffer at the start of Q2 (April 1) to inherit values from late December (Q4), resulting in higher error in the first 10 days of Q2 ($\text{MAE} = 0.1496$) before stabilizing ($\text{MAE} = 0.1301$).
+3. **Structural Hypotheses for Q2 Seasonal Sensitivity:**
+   In leave-one-quarter-out testing, Q2 holdout error ($\text{MAE} = 0.1322\text{ kWh}$) was higher than Q1 ($\text{MAE} = 0.0994\text{ kWh}$). We hypothesize two structural contributors:
+   - **Transition Dynamics:** Spring (April–June) experiences transitional heating/cooling load volatility compared to steady winter/summer baselines.
+   - **Concatenation Discontinuity:** Splicing non-contiguous quarters creates an initial lookback feature artifact at the quarter boundary.
 
-4. **Behavioral Compliance Modeling vs. Real-World Field Trials:**
-   We explicitly state that the simulated $6.8\% - 13.2\%$ residential energy savings are derived from Monte Carlo compliance simulations ($\alpha \sim \text{Beta}(2,5)$) combined with appliance wattage reduction vectors, rather than an in-situ human trial. Real human behavioral adoption will be measured in our forthcoming 50-home RCT.
+4. **Behavioral Compliance Grounding (Simulation vs. Real Human Trials):**
+   We explicitly state that energy reduction claims represent model-simulated theoretical potential derived from appliance wattage disaggregation vectors rather than in-situ human measurements. True behavioral compliance and sustained retention will be evaluated in our planned 50-home RCT.
 
 5. **Comfort Factor ($k$) as an Empirical Risk Dial:**
    The comfort multiplier $k$ in $B = \mu + k\cdot\sigma$ is mathematically grounded in Gaussian exceedance theory ($P(\text{exceed}) = 1 - \Phi(k)$), but functions operationally as a user-tunable risk tolerance heuristic. We recommend $k=0.50$ as a balanced default that provides actionable budget pressure ($\approx 31.8\%$ overrun rate) without triggering excessive notification fatigue ($\approx 9.5$ alerts/month).
