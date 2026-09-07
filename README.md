@@ -25,6 +25,7 @@ python run_all_evaluations.py
 This executes all 5 evaluation components in sequence and consolidates findings into [`RESULTS.md`](RESULTS.md) and [`FINAL_EVALUATION_RESULTS.json`](FINAL_EVALUATION_RESULTS.json).
 
 ### Documentation & Reviewer Rebuttal
+- **[`FINAL_REPORT.md`](FINAL_REPORT.md)** — Master publication-grade experimental report and synthesis.
 - **[`RESULTS.md`](RESULTS.md)** — Consolidated experimental evaluation tables, sensitivity sweeps, cross-validation metrics, and robustness benchmarks.
 - **[`DRAFT.md`](DRAFT.md)** — Point-by-point reviewer rebuttal and paper revision guide addressing all 6 major review comments.
 

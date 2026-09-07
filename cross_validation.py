@@ -36,7 +36,7 @@ warnings.filterwarnings('ignore')
 try:
     import xgboost as xgb
     HAS_XGB = True
-except ImportError:
+except Exception:
     HAS_XGB = False
 
 
@@ -234,63 +234,53 @@ def main():
         model_mean_mae[model_name] = np.mean(maes)
     print()
 
-    # --- Paired statistical test ---
+    # --- Paired statistical tests (All pairs including MLP) ---
     print("=" * 100)
-    print("WILCOXON SIGNED-RANK PAIRED TEST (TOP-2 MODELS)")
+    print("PAIRWISE STATISTICAL HYPOTHESIS TESTS ACROSS ALL 5 FOLDS (N = 275 SAMPLES)")
     print("=" * 100 + "\n")
 
-    if len(model_mean_mae) >= 2:
-        sorted_models = sorted(model_mean_mae.items(), key=lambda x: x[1])
-        model_a, mae_a = sorted_models[0]
-        model_b, mae_b = sorted_models[1]
+    pairwise_tests = []
+    models_to_test = [m for m in ['MLP', 'Random Forest', 'Linear Regression', 'XGBoost'] if m in all_abs_errors and len(all_abs_errors[m]) > 0]
 
-        errors_a = np.array(all_abs_errors[model_a])
-        errors_b = np.array(all_abs_errors[model_b])
-        min_len = min(len(errors_a), len(errors_b))
-        errors_a = errors_a[:min_len]
-        errors_b = errors_b[:min_len]
+    for i in range(len(models_to_test)):
+        for j in range(i + 1, len(models_to_test)):
+            m_a = models_to_test[i]
+            m_b = models_to_test[j]
 
-        print(f"  Comparing: {model_a} (mean MAE={mae_a:.4f}) vs {model_b} (mean MAE={mae_b:.4f})")
-        print(f"  Paired samples: {min_len}\n")
+            errors_a = np.array(all_abs_errors[m_a])
+            errors_b = np.array(all_abs_errors[m_b])
+            min_len = min(len(errors_a), len(errors_b))
+            errors_a = errors_a[:min_len]
+            errors_b = errors_b[:min_len]
 
-        if min_len > 10:
-            try:
+            if min_len > 10:
                 stat, p_value = wilcoxon(errors_a, errors_b, alternative='two-sided')
-                # Effect size: rank-biserial correlation
                 n = min_len
                 r = 1 - (2 * stat) / (n * (n + 1) / 2)
+                mean_diff = float(np.mean(errors_a - errors_b))
 
-                print(f"  Wilcoxon W statistic: {stat:.2f}")
-                print(f"  p-value:              {p_value:.6f}")
-                print(f"  Effect size (r):      {r:.4f}")
+                sig_str = "Statistically Significant (p < 0.05)" if p_value < 0.05 else "Not Statistically Significant (p ≥ 0.05)"
+                print(f"  Comparison: {m_a} vs {m_b}")
+                print(f"    - Paired samples:       {min_len}")
+                print(f"    - Mean Absolute Diff:   {mean_diff:+.6f} kWh")
+                print(f"    - Wilcoxon W stat:      {stat:.2f}")
+                print(f"    - p-value:              {p_value:.6f} ({sig_str})")
+                print(f"    - Effect size (r):      {r:.4f}")
+                print()
 
-                if p_value < 0.05:
-                    print(f"\n  ✓ The difference IS statistically significant (p < 0.05).")
-                    print(f"    {model_a} is significantly better than {model_b}.")
-                else:
-                    print(f"\n  ✗ The difference is NOT statistically significant (p = {p_value:.4f} ≥ 0.05).")
-                    print(f"    We CANNOT claim {model_a} is superior to {model_b}.")
-                    print(f"    This is consistent with the paper's statement that the gap is suggestive")
-                    print(f"    rather than conclusive.")
-
-                wilcoxon_result = {
-                    'model_a': model_a,
-                    'model_b': model_b,
+                pairwise_tests.append({
+                    'model_a': m_a,
+                    'model_b': m_b,
                     'n_samples': int(min_len),
+                    'mean_abs_diff_kwh': mean_diff,
                     'W_statistic': float(stat),
                     'p_value': float(p_value),
                     'effect_size_r': float(r),
                     'significant_at_005': bool(p_value < 0.05),
-                }
-            except Exception as e:
-                print(f"  [WARN] Wilcoxon test failed: {e}")
-                wilcoxon_result = {'error': str(e)}
-        else:
-            print(f"  [SKIP] Too few samples ({min_len}) for Wilcoxon test.")
-            wilcoxon_result = {'error': 'insufficient samples'}
-    else:
-        wilcoxon_result = {'error': 'fewer than 2 models available'}
-    print()
+                })
+
+    # Legacy top-2 test for backward compatibility
+    primary_test = pairwise_tests[0] if pairwise_tests else {}
 
     # --- Save ---
     output = {
@@ -299,7 +289,8 @@ def main():
         'n_folds': n_folds,
         'folds': folds,
         'cross_validation_results': {},
-        'wilcoxon_test': wilcoxon_result,
+        'wilcoxon_test': primary_test,
+        'pairwise_statistical_tests': pairwise_tests,
     }
 
     for model_name in fold_metrics:
@@ -324,3 +315,4 @@ def main():
 
 if __name__ == '__main__':
     main()
+

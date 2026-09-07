@@ -32,9 +32,9 @@ warnings.filterwarnings('ignore')
 try:
     import xgboost as xgb
     HAS_XGB = True
-except ImportError:
+except Exception:
     HAS_XGB = False
-    print("[WARN] xgboost not installed — will skip XGBoost model.")
+    print("[WARN] xgboost not available — will skip XGBoost model.")
 
 try:
     os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
@@ -44,9 +44,10 @@ try:
     from tensorflow.keras import layers
     from tensorflow.keras.callbacks import EarlyStopping
     HAS_TF = True
-except ImportError:
+except Exception:
     HAS_TF = False
-    print("[WARN] tensorflow not installed — will skip LSTM model.")
+    print("[WARN] tensorflow not available — will skip LSTM model.")
+
 
 
 # ============================================================================

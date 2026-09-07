@@ -80,16 +80,15 @@ def consolidate_results():
         else:
             print(f"[WARN] {result_file} not found — skipping.")
 
-    out_paths = ['COMPREHENSIVE_EVALUATION_RESULTS.json', 'FINAL_EVALUATION_RESULTS.json']
-    for out_path in out_paths:
-        with open(out_path, 'w') as f:
-            json.dump(consolidated, f, indent=2)
-        print(f"[✓] Consolidated JSON results saved to {out_path}")
+    out_path = 'FINAL_EVALUATION_RESULTS.json'
+    with open(out_path, 'w') as f:
+        json.dump(consolidated, f, indent=2)
+    print(f"[✓] Consolidated JSON results saved to {out_path}")
 
     # Generate comprehensive Markdown results document
     generate_markdown_summary(consolidated, 'RESULTS.md')
 
-    return out_paths[0]
+    return out_path
 
 
 def generate_markdown_summary(data, md_path):
@@ -155,8 +154,18 @@ def generate_markdown_summary(data, md_path):
         for m_name, m_data in cv.get('cross_validation_results', {}).items():
             lines.append(f"| **{m_name}** | {m_data.get('mae_mean', 0):.4f} ± {m_data.get('mae_std', 0):.4f} | {m_data.get('rmse_mean', 0):.4f} ± {m_data.get('rmse_std', 0):.4f} |")
         lines.append("")
-        pt = cv.get('wilcoxon_test', {})
-        if pt:
+        pairwise = cv.get('pairwise_statistical_tests', [])
+        if pairwise:
+            lines.append("### Pairwise Wilcoxon Signed-Rank Tests ($N = 275$ Pooled Fold Days)")
+            lines.append("")
+            lines.append(r"| Model Comparison | Mean Abs Diff (kWh) | Wilcoxon $W$ | $p$-value | Significance ($\alpha=0.05$) | Effect Size ($r$) |")
+            lines.append("|:-----------------|:-------------------:|:------------:|:---------:|:-----------------------------:|:-----------------:|")
+            for pt in pairwise:
+                sig_str = "Significant" if pt.get('significant_at_005') else "Not Significant"
+                lines.append(f"| **{pt.get('model_a')}** vs **{pt.get('model_b')}** | {pt.get('mean_abs_diff_kwh', 0):+.4f} | {pt.get('W_statistic', 0):.1f} | {pt.get('p_value', 0):.4f} | {sig_str} | {pt.get('effect_size_r', 0):.4f} |")
+            lines.append("")
+        elif cv.get('wilcoxon_test'):
+            pt = cv.get('wilcoxon_test', {})
             lines.append(f"**Paired Test Comparison:** `{pt.get('model_a')}` vs `{pt.get('model_b')}`")
             lines.append(f"- **Paired Samples:** {pt.get('n_samples', 0)}")
             lines.append(f"- **Wilcoxon W Statistic:** {pt.get('W_statistic', 0):.2f}")
@@ -259,9 +268,9 @@ def main():
         size = os.path.getsize(f) if os.path.exists(f) else 0
         print(f"  {status} {f:45} ({size:,} bytes)")
 
-    if os.path.exists('COMPREHENSIVE_EVALUATION_RESULTS.json'):
-        size = os.path.getsize('COMPREHENSIVE_EVALUATION_RESULTS.json')
-        print(f"  ✓ {'COMPREHENSIVE_EVALUATION_RESULTS.json':45} ({size:,} bytes)")
+    if os.path.exists('FINAL_EVALUATION_RESULTS.json'):
+        size = os.path.getsize('FINAL_EVALUATION_RESULTS.json')
+        print(f"  ✓ {'FINAL_EVALUATION_RESULTS.json':45} ({size:,} bytes)")
 
     print("\n" + "=" * 100)
     print("Done. All results ready for paper integration.")

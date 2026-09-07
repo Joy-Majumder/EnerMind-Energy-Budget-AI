@@ -1,5 +1,5 @@
 {
-  "timestamp": "2026-09-06T14:35:26.712516",
+  "timestamp": "2026-09-07T14:00:31.716619",
   "dataset": "UCI-235",
   "n_folds": 5,
   "folds": [
@@ -66,23 +66,23 @@
       ]
     },
     "Random Forest": {
-      "mae_mean": 0.10857324557177739,
-      "mae_std": 0.006726138081188351,
-      "rmse_mean": 0.13568013539773466,
-      "rmse_std": 0.011623321875533821,
+      "mae_mean": 0.10857324557177743,
+      "mae_std": 0.006726138081188344,
+      "rmse_mean": 0.13568013539773474,
+      "rmse_std": 0.011623321875533912,
       "per_fold_mae": [
-        0.1034041657820658,
-        0.10123616529398002,
+        0.10340416578206589,
+        0.10123616529397997,
         0.12016998959770785,
         0.11134684813410135,
-        0.106709059051032
+        0.10670905905103208
       ],
       "per_fold_rmse": [
-        0.13171581158064827,
-        0.12479269901834819,
-        0.1582332041224107,
-        0.13304602078488995,
-        0.13061294148237618
+        0.1317158115806484,
+        0.12479269901834808,
+        0.15823320412241093,
+        0.13304602078489006,
+        0.1306129414823762
       ]
     },
     "Linear Regression": {
@@ -107,12 +107,45 @@
     }
   },
   "wilcoxon_test": {
-    "model_a": "Random Forest",
-    "model_b": "Linear Regression",
+    "model_a": "MLP",
+    "model_b": "Random Forest",
     "n_samples": 275,
-    "W_statistic": 18342.0,
-    "p_value": 0.6315640962601614,
-    "effect_size_r": 0.03335968379446641,
+    "mean_abs_diff_kwh": 0.002989620857201332,
+    "W_statistic": 17262.0,
+    "p_value": 0.19439866961531316,
+    "effect_size_r": 0.09027667984189724,
     "significant_at_005": false
-  }
+  },
+  "pairwise_statistical_tests": [
+    {
+      "model_a": "MLP",
+      "model_b": "Random Forest",
+      "n_samples": 275,
+      "mean_abs_diff_kwh": 0.002989620857201332,
+      "W_statistic": 17262.0,
+      "p_value": 0.19439866961531316,
+      "effect_size_r": 0.09027667984189724,
+      "significant_at_005": false
+    },
+    {
+      "model_a": "MLP",
+      "model_b": "Linear Regression",
+      "n_samples": 275,
+      "mean_abs_diff_kwh": 0.0023473392335595605,
+      "W_statistic": 17335.0,
+      "p_value": 0.21409815293649892,
+      "effect_size_r": 0.08642951251646902,
+      "significant_at_005": false
+    },
+    {
+      "model_a": "Random Forest",
+      "model_b": "Linear Regression",
+      "n_samples": 275,
+      "mean_abs_diff_kwh": -0.0006422816236417717,
+      "W_statistic": 18342.0,
+      "p_value": 0.6315640962601614,
+      "effect_size_r": 0.03335968379446641,
+      "significant_at_005": false
+    }
+  ]
 }

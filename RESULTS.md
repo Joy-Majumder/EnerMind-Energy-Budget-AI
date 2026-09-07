@@ -1,5 +1,5 @@
 # EnerMind: Comprehensive Experimental Evaluation & Final Results
-**Generated:** 2026-09-06T14:35:33.083053  
+**Generated:** 2026-09-07T14:00:38.693954  
 **System Version:** 2.0 (Real Data Multi-Model Benchmark)  
 
 ---
@@ -19,7 +19,6 @@ This document provides the complete, consolidated results across all five rigoro
 | Model Architecture | MAE (kWh) | RMSE (kWh) | Hit Rate (±10%) | Status |
 |:-------------------|:---------:|:----------:|:---------------:|:-------|
 | **MLP** | 0.1105 | 0.1321 | 100.0% | ✅ Deployed |
-| **LSTM** | 0.1125 | 0.1347 | 100.0% | Benchmark |
 | **Random Forest** | 0.1146 | 0.1362 | 100.0% | Benchmark |
 | **Linear Regression** | 0.1193 | 0.1418 | 100.0% | Benchmark |
 
@@ -47,11 +46,13 @@ Walk-forward rolling-origin evaluation across 5 chronological expanding folds wi
 | **Random Forest** | 0.1086 ± 0.0067 | 0.1357 ± 0.0116 |
 | **Linear Regression** | 0.1092 ± 0.0063 | 0.1346 ± 0.0054 |
 
-**Paired Test Comparison:** `Random Forest` vs `Linear Regression`
-- **Paired Samples:** 275
-- **Wilcoxon W Statistic:** 18342.00
-- **p-value:** 0.6316 (Not Statistically Significant (p ≥ 0.05))
-- **Effect Size ($r$):** 0.0334
+### Pairwise Wilcoxon Signed-Rank Tests ($N = 275$ Pooled Fold Days)
+
+| Model Comparison | Mean Abs Diff (kWh) | Wilcoxon $W$ | $p$-value | Significance ($\alpha=0.05$) | Effect Size ($r$) |
+|:-----------------|:-------------------:|:------------:|:---------:|:-----------------------------:|:-----------------:|
+| **MLP** vs **Random Forest** | +0.0030 | 17262.0 | 0.1944 | Not Significant | 0.0903 |
+| **MLP** vs **Linear Regression** | +0.0023 | 17335.0 | 0.2141 | Not Significant | 0.0864 |
+| **Random Forest** vs **Linear Regression** | -0.0006 | 18342.0 | 0.6316 | Not Significant | 0.0334 |
 
 ## 4. Full-Pipeline Replay Evaluation
 

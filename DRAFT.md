@@ -235,15 +235,44 @@ To evaluate stability across time without target leakage, we ran expanding-windo
 - **Random Forest:** $\text{MAE} = 0.1086 \pm 0.0067\text{ kWh}$, $\text{RMSE} = 0.1357 \pm 0.0116\text{ kWh}$
 - **Linear Regression:** $\text{MAE} = 0.1092 \pm 0.0063\text{ kWh}$, $\text{RMSE} = 0.1346 \pm 0.0054\text{ kWh}$
 
-#### 3. Paired Statistical Hypothesis Testing:
-- **Test:** Two-tailed Wilcoxon Signed-Rank Test on paired absolute errors ($n = 275$ fold-evaluation points)
-- **Comparison:** Random Forest vs. Linear Regression / MLP
-- **Wilcoxon $W$ Statistic:** $18342.00$
-- **$p$-value:** $p = 0.6316 \ge 0.05$ (Fail to reject null hypothesis of significant performance divergence)
-- **Effect Size ($r = \frac{Z}{\sqrt{N}}$):** $r = 0.0334$ (Negligible effect size)
+#### 3. Paired Statistical Hypothesis Testing ($N=275$ Pooled Walk-Forward Days):
+To evaluate whether any architectural family exhibits statistically superior predictive power across the complete 275 walk-forward evaluation days, we conducted two-tailed Wilcoxon signed-rank tests across all paired daily absolute error arrays:
 
-#### Architectural Justification for MLP:
-The statistical analysis proves that while Random Forest and Stacked LSTM do not offer statistically significant predictive advantages over the MLP ($p = 0.6316$), the **MLP achieves equivalent or lower test error with over $85\%$ reduction in memory footprint and latency**, making it unequivocally the optimal design choice for edge-embedded residential energy gateways.
+| Comparison | Mean Abs Diff (kWh/day) | Wilcoxon $W$ | $p$-value | Significance ($\alpha=0.05$) | Effect Size ($r$) |
+|:---|:---:|:---:|:---:|:---:|:---:|
+| **MLP vs. Random Forest** | $+0.0030$ | $17262.0$ | $p = 0.1944$ | Not Significant ($p \ge 0.05$) | $0.0903$ (Negligible) |
+| **MLP vs. Linear Regression** | $+0.0023$ | $17335.0$ | $p = 0.2141$ | Not Significant ($p \ge 0.05$) | $0.0864$ (Negligible) |
+| **Random Forest vs. Linear Regression** | $-0.0006$ | $18342.0$ | $p = 0.6316$ | Not Significant ($p \ge 0.05$) | $0.0334$ (Negligible) |
+
+#### Architectural Justification for Edge MLP:
+The non-parametric paired tests across all $N=275$ walk-forward days confirm that there is **no statistically significant predictive accuracy gap** between the lightweight MLP, Random Forest, and Linear Regression ($p > 0.19$ for all pairs, effect sizes $r < 0.10$). However, from an embedded systems and edge gateway perspective:
+- **Memory Footprint:** MLP requires $<50\text{ KB}$ weights vs. $>2.4\text{ MB}$ for 100-tree Random Forest.
+- **Inference Latency:** MLP executes in $<0.2\text{ ms}$ on low-power ARM Cortex-M microcontrollers vs. $>15\text{ ms}$ for stacked LSTM or multi-tree traversal.
+- **Continuous Adaptation:** MLP supports lightweight incremental gradient fine-tuning on edge devices without re-allocating tree ensembles.
+Thus, the lightweight MLP is the optimal choice for real-time edge residential gateways.
+
+---
+
+## 7. Methodological Boundaries, Physical Explanations, & Scope Limitations
+
+To ensure total scientific transparency and rigorous review compliance, we explicitly delineate the following structural boundaries:
+
+1. **Single-Household Experimental Scope:**
+   All empirical validations (5-fold rolling CV, pipeline trace replay, sensitivity sweeps, stress tests) are strictly conducted on the 365-day UCI-235 individual household smart meter dataset. The multi-member budget breakdown in the prototype demonstrates sub-metering allocation logic on a representative multi-member load profile. We refrain from claiming empirical multi-household cohort validation prior to our planned multi-home field trial.
+
+2. **Temporal Alerting Granularity (Proactive vs. Reactive):**
+   Our trace replay validates same-day overrun detection ($100\%$ recall) and month-ahead trajectory tracking on daily aggregates. We clarify that true **intraday proactive early-warning** (warning hours before an evening overrun occurs) structurally requires sub-hourly (15-minute) telemetry streaming. The EnerMind edge engine supports 15-minute projection, while daily aggregates serve multi-day budget pacing.
+
+3. **Physical & Methodological Explanation of Q2 Seasonal Drop:**
+   In leave-one-quarter-out testing, Q2 test error ($\text{MAE} = 0.1322\text{ kWh}$) was $33\%$ higher than Q1 ($\text{MAE} = 0.0994\text{ kWh}$). Analysis of the raw telemetry reveals two contributing factors:
+   - **Physical Transition Dynamics:** Spring (April–June) experiences volatile weather swings between late space-heating and early cooling, exhibiting higher intra-quarter variance than stationary winter/summer baselines.
+   - **Feature Boundary Artifact:** In leave-Q2-out training (Q1+Q3+Q4), non-contiguous time concatenation causes the 30-day lag buffer at the start of Q2 (April 1) to inherit values from late December (Q4), resulting in higher error in the first 10 days of Q2 ($\text{MAE} = 0.1496$) before stabilizing ($\text{MAE} = 0.1301$).
+
+4. **Behavioral Compliance Modeling vs. Real-World Field Trials:**
+   We explicitly state that the simulated $6.8\% - 13.2\%$ residential energy savings are derived from Monte Carlo compliance simulations ($\alpha \sim \text{Beta}(2,5)$) combined with appliance wattage reduction vectors, rather than an in-situ human trial. Real human behavioral adoption will be measured in our forthcoming 50-home RCT.
+
+5. **Comfort Factor ($k$) as an Empirical Risk Dial:**
+   The comfort multiplier $k$ in $B = \mu + k\cdot\sigma$ is mathematically grounded in Gaussian exceedance theory ($P(\text{exceed}) = 1 - \Phi(k)$), but functions operationally as a user-tunable risk tolerance heuristic. We recommend $k=0.50$ as a balanced default that provides actionable budget pressure ($\approx 31.8\%$ overrun rate) without triggering excessive notification fatigue ($\approx 9.5$ alerts/month).
 
 ---
 
